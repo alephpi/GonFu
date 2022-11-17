@@ -5,7 +5,7 @@
 
 run(){
     # pull the repo !
-    git pull 
+    git pull origin master
     echo "Repo pulled !"  
 
     echo "Running the model ..." 
