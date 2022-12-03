@@ -80,6 +80,3 @@ def generative_model(noise):
     # return np.maximum(0, latent_variable @ parameters)
     return model.decode(latent_variable).detach().numpy()
 
-noise = np.load('data/noise.npy')
-print(generative_model(noise))
-
