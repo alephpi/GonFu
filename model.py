@@ -10,53 +10,22 @@
 # See below an example of a generative model
 # G_\theta(Z) = np.max(0, \theta.Z)
 ############################################################################
+# import pandas as pd
+# import numpy as np
+# import matplotlib.pyplot as plt
+from tensorflow.keras.layers import Input, Dense, LeakyReLU
+from tensorflow.keras.models import Model
 
-import numpy as np
-import os
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-input_size = 6
-learning_rate = 5e-4
-batch_size = 4
-
-# VAE model
-class VAE(nn.Module):
-    def __init__(self, input_size=6, h_dim=256, z_dim=20, out_channels=16, kernel_size=3, pool_size=2):
-        super(VAE, self).__init__()
-        self.conv1 = torch.nn.Conv1d(in_channels=input_size, out_channels=out_channels, kernel_size=kernel_size, padding='same')
-        self.conv2 = torch.nn.Conv1d(in_channels=out_channels, out_channels=out_channels*2, kernel_size=kernel_size, padding='same')
-        self.maxpool = nn.MaxPool1d(kernel_size=pool_size, stride = pool_size)
-        self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(15*out_channels*2, h_dim)
-        self.fc2 = nn.Linear(h_dim, z_dim)
-        self.fc3 = nn.Linear(h_dim, z_dim)
-        self.fc4 = nn.Linear(z_dim, h_dim)
-        self.fc5 = nn.Linear(h_dim, input_size)
-        
-    def encode(self, x):
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
-        x = self.maxpool(x)
-        x = self.flatten(x)
-        h = F.relu(self.fc1(x))
-        return self.fc2(h), self.fc3(h) # mu(mean of q(z|x)) & log variance
-    
-    def reparameterize(self, mu, log_var):
-        std = torch.exp(log_var/2)
-        eps = torch.randn_like(std) # generate standard gaussian variable
-        return mu + eps * std # make backpropa possible
-
-    def decode(self, z):
-        h = F.relu(self.fc4(z))
-        return torch.sigmoid(self.fc5(h))
-    
-    def forward(self, x):
-        mu, log_var = self.encode(x)
-        z = self.reparameterize(mu, log_var)
-        x_reconst = self.decode(z)
-        return x_reconst, mu, log_var
+def build_generator(z_dim,):
+  z_rand = Input(shape=(z_dim,))
+  x = Dense(32)(z_rand)
+  x = LeakyReLU(alpha=0.2)(x)
+  x = Dense(32)(x)
+  x = LeakyReLU(alpha=0.2)(x)
+  x = Dense(6)(x)
+  output = x
+  model_generator = Model(z_rand, output)
+  return model_generator
 
 # <!> DO NOT ADD ANY OTHER ARGUMENTS <!>
 def generative_model(noise):
@@ -70,13 +39,23 @@ def generative_model(noise):
     """
     # See below an example
     # ---------------------
-    latent_dim = 20
-    latent_variable = torch.tensor(noise[:, :latent_dim]).to('cpu')
-    # load my parameters (of dimension 10 in this example). 
-    parameters = torch.load(os.path.join("parameters", "weights"))
-    model = VAE()
-    model.load_state_dict(parameters)
+    latent_dim = 50
+    latent_variable = noise[:, :latent_dim]
 
-    # return np.maximum(0, latent_variable @ parameters)
-    return model.decode(latent_variable).detach().numpy()
+    # load my parameters
+    generator = build_generator(z_dim=50)
+    generator.load_weights('parameters/weights_generator_GAN')
 
+    return generator(latent_variable)
+
+# test = pd.read_csv('data/df_train.csv')
+# test = np.array(test)[7700:, :]
+# generated = generative_model(noise=np.random.randn(test.shape[0], 50))
+
+# ax = [None] * 6
+# plt.figure(figsize= (20,10))
+# for i in range(1,7,1):
+#   ax[i-1] = plt.subplot(2,3,i)
+#   ax[i-1].hist(test[:,i-1], alpha=0.5, bins=100)
+#   ax[i-1].hist(generated[:,i-1], alpha=0.5, bins=100)
+# plt.show()
