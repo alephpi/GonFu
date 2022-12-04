@@ -1,7 +1,7 @@
 ##############################################
 # YOU MUST NOT MODIFY THIS FILE
 ##############################################
-from model import generative_model
+from model_cond import generative_model
 import numpy as np
 import logging
 
@@ -10,7 +10,7 @@ logging.basicConfig(filename="check.log", level=logging.DEBUG,
                     format="%(asctime)s:%(levelname)s: %(message)s", 
                     filemode='w')
 
-def simulate(noise):
+def simulate(noise, position):
     """
     simulation of your Generative Model
 
@@ -23,7 +23,7 @@ def simulate(noise):
     """
 
     try:
-        output = generative_model(noise)
+        output = generative_model(noise, position)
         message = "Successful simulation" 
         assert output.shape == (noise.shape[0], 6), "Shape error, it must be (n_data, 6). Please verify the shape of the output."
         
@@ -41,6 +41,7 @@ def simulate(noise):
     
 if __name__ == "__main__":
     noise = np.load("data/noise.npy")
-    simulate(noise)
+    position = np.load("data/position.npy")
+    simulate(noise, position)
     
     
