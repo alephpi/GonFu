@@ -10,7 +10,7 @@ RUN python -m pip install -r requirements.txt
 
 # Copy files
 COPY parameters/ ./parameters/  
-COPY model.py .
+COPY model_cond.py .
 COPY main.py . 
 
 CMD ["python", "./main.py"]
