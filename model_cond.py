@@ -49,14 +49,18 @@ def generative_model(noise, position):
     # See below an example
     # ---------------------
     latent_variable = noise[:, :50]  # use the first 10 dimensions of the noise
+
+    positions = np.expand_dims(position, 1).reshape(1, -1)
+    positions = np.repeat(positions, latent_variable.shape[0], 0)
+    z_posit = np.concatenate((latent_variable, positions), axis=1)
     
     # load my parameters (of dimension 10 in this example). 
     # <!> be sure that they are stored in the parameters/ directory <!>
-    generator = build_generator(z_dim=50)
+    generator = build_generator(z_dim=62)
     generator.load_weights('parameters/weights_generator')
 
 
-    return generator(latent_variable)
+    return generator(z_posit)
 
 
 

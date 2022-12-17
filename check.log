@@ -1,1 +1,1 @@
-2022-12-17 23:25:39,082:DEBUG: Received incompatible tensor with shape (62, 32) when attempting to restore variable with shape (50, 32) and name layer_with_weights-0/kernel/.ATTRIBUTES/VARIABLE_VALUE.
+2022-12-17 23:36:01,647:DEBUG: Successful simulation
