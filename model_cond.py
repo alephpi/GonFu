@@ -14,6 +14,28 @@
 import numpy as np
 import os
 
+from tensorflow.keras.layers import Input, Dense, LeakyReLU
+from tensorflow.keras.models import Model
+import tensorflow
+
+def build_generator(z_dim,):
+
+  z_rand = Input(shape=(z_dim,))
+  x = Dense(32)(z_rand)
+  x = LeakyReLU(alpha=0.2)(x)
+  x = Dense(16)(x)
+  x = LeakyReLU(alpha=0.2)(x)
+  x = Dense(6)(x)
+  mean = np.array([-0.00375393,  0.01648988, -0.01080703,  0.00253291,  0.00089046,
+        0.00957318])
+  mean = tensorflow.convert_to_tensor(mean)
+  mean = tensorflow.cast(mean, tensorflow.float32)
+  output = x - mean
+  model_generator = Model(z_rand, output)
+  model_generator.summary()
+
+  return model_generator
+
 # <!> DO NOT ADD ANY OTHER ARGUMENTS <!>
 def generative_model(noise, position):
     """
@@ -26,15 +48,15 @@ def generative_model(noise, position):
     """
     # See below an example
     # ---------------------
-    latent_variable = noise[:, :10]  # use the first 10 dimensions of the noise
+    latent_variable = noise[:, :50]  # use the first 10 dimensions of the noise
     
     # load my parameters (of dimension 10 in this example). 
     # <!> be sure that they are stored in the parameters/ directory <!>
-    parameters = np.load(os.path.join("parameters", "example_params.npy"))
+    generator = build_generator(z_dim=50)
+    generator.load_weights('parameters/weights_generator')
 
-    # in this example, we concatenate the latent variable with the covariate
-    X = np.concatenate([latent_variable, np.tile(position, (latent_variable.shape[0] ,1))], axis=1)
-    return np.maximum(0, X @ parameters)
+
+    return generator(latent_variable)
 
 
 
